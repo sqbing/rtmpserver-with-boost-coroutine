@@ -34,12 +34,13 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = RTMPServer$(EXEEXT)
+bin_PROGRAMS = TCPServer$(EXEEXT) TCPClient$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	config.guess config.sub depcomp install-sh ltmain.sh missing
+	compile config.guess config.sub depcomp install-sh ltmain.sh \
+	missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -52,9 +53,12 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_RTMPServer_OBJECTS = server.$(OBJEXT)
-RTMPServer_OBJECTS = $(am_RTMPServer_OBJECTS)
-RTMPServer_LDADD = $(LDADD)
+am_TCPClient_OBJECTS = TCPClient-client.$(OBJEXT)
+TCPClient_OBJECTS = $(am_TCPClient_OBJECTS)
+TCPClient_DEPENDENCIES =
+am_TCPServer_OBJECTS = TCPServer-server.$(OBJEXT)
+TCPServer_OBJECTS = $(am_TCPServer_OBJECTS)
+TCPServer_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -68,8 +72,8 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(RTMPServer_SOURCES)
-DIST_SOURCES = $(RTMPServer_SOURCES)
+SOURCES = $(TCPClient_SOURCES) $(TCPServer_SOURCES)
+DIST_SOURCES = $(TCPClient_SOURCES) $(TCPServer_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -206,7 +210,20 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-RTMPServer_SOURCES = $(top_srcdir)/src/server.cpp
+TCPServer_SOURCES = $(top_srcdir)/src/server.cpp
+TCPServer_CPPFLAGS = -Wall\
+				   -pthread
+
+TCPServer_LDADD = -lpthread\
+				-lboost_system
+
+TCPClient_SOURCES = $(top_srcdir)/src/client.cpp
+TCPClient_CPPFLAGS = -Wall\
+				   -pthread
+
+TCPClient_LDADD = -lpthread\
+				-lboost_system
+
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -304,9 +321,12 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-RTMPServer$(EXEEXT): $(RTMPServer_OBJECTS) $(RTMPServer_DEPENDENCIES) $(EXTRA_RTMPServer_DEPENDENCIES) 
-	@rm -f RTMPServer$(EXEEXT)
-	$(CXXLINK) $(RTMPServer_OBJECTS) $(RTMPServer_LDADD) $(LIBS)
+TCPClient$(EXEEXT): $(TCPClient_OBJECTS) $(TCPClient_DEPENDENCIES) $(EXTRA_TCPClient_DEPENDENCIES) 
+	@rm -f TCPClient$(EXEEXT)
+	$(CXXLINK) $(TCPClient_OBJECTS) $(TCPClient_LDADD) $(LIBS)
+TCPServer$(EXEEXT): $(TCPServer_OBJECTS) $(TCPServer_DEPENDENCIES) $(EXTRA_TCPServer_DEPENDENCIES) 
+	@rm -f TCPServer$(EXEEXT)
+	$(CXXLINK) $(TCPServer_OBJECTS) $(TCPServer_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -314,7 +334,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/server.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TCPClient-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TCPServer-server.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -337,19 +358,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
-server.o: $(top_srcdir)/src/server.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server.o -MD -MP -MF $(DEPDIR)/server.Tpo -c -o server.o `test -f '$(top_srcdir)/src/server.cpp' || echo '$(srcdir)/'`$(top_srcdir)/src/server.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server.Tpo $(DEPDIR)/server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/src/server.cpp' object='server.o' libtool=no @AMDEPBACKSLASH@
+TCPClient-client.o: $(top_srcdir)/src/client.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPClient_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TCPClient-client.o -MD -MP -MF $(DEPDIR)/TCPClient-client.Tpo -c -o TCPClient-client.o `test -f '$(top_srcdir)/src/client.cpp' || echo '$(srcdir)/'`$(top_srcdir)/src/client.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/TCPClient-client.Tpo $(DEPDIR)/TCPClient-client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/src/client.cpp' object='TCPClient-client.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server.o `test -f '$(top_srcdir)/src/server.cpp' || echo '$(srcdir)/'`$(top_srcdir)/src/server.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPClient_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o TCPClient-client.o `test -f '$(top_srcdir)/src/client.cpp' || echo '$(srcdir)/'`$(top_srcdir)/src/client.cpp
 
-server.obj: $(top_srcdir)/src/server.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server.obj -MD -MP -MF $(DEPDIR)/server.Tpo -c -o server.obj `if test -f '$(top_srcdir)/src/server.cpp'; then $(CYGPATH_W) '$(top_srcdir)/src/server.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/server.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server.Tpo $(DEPDIR)/server.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/src/server.cpp' object='server.obj' libtool=no @AMDEPBACKSLASH@
+TCPClient-client.obj: $(top_srcdir)/src/client.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPClient_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TCPClient-client.obj -MD -MP -MF $(DEPDIR)/TCPClient-client.Tpo -c -o TCPClient-client.obj `if test -f '$(top_srcdir)/src/client.cpp'; then $(CYGPATH_W) '$(top_srcdir)/src/client.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/client.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/TCPClient-client.Tpo $(DEPDIR)/TCPClient-client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/src/client.cpp' object='TCPClient-client.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server.obj `if test -f '$(top_srcdir)/src/server.cpp'; then $(CYGPATH_W) '$(top_srcdir)/src/server.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/server.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPClient_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o TCPClient-client.obj `if test -f '$(top_srcdir)/src/client.cpp'; then $(CYGPATH_W) '$(top_srcdir)/src/client.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/client.cpp'; fi`
+
+TCPServer-server.o: $(top_srcdir)/src/server.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TCPServer-server.o -MD -MP -MF $(DEPDIR)/TCPServer-server.Tpo -c -o TCPServer-server.o `test -f '$(top_srcdir)/src/server.cpp' || echo '$(srcdir)/'`$(top_srcdir)/src/server.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/TCPServer-server.Tpo $(DEPDIR)/TCPServer-server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/src/server.cpp' object='TCPServer-server.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o TCPServer-server.o `test -f '$(top_srcdir)/src/server.cpp' || echo '$(srcdir)/'`$(top_srcdir)/src/server.cpp
+
+TCPServer-server.obj: $(top_srcdir)/src/server.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TCPServer-server.obj -MD -MP -MF $(DEPDIR)/TCPServer-server.Tpo -c -o TCPServer-server.obj `if test -f '$(top_srcdir)/src/server.cpp'; then $(CYGPATH_W) '$(top_srcdir)/src/server.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/server.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/TCPServer-server.Tpo $(DEPDIR)/TCPServer-server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(top_srcdir)/src/server.cpp' object='TCPServer-server.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TCPServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o TCPServer-server.obj `if test -f '$(top_srcdir)/src/server.cpp'; then $(CYGPATH_W) '$(top_srcdir)/src/server.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/server.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
