@@ -22,4 +22,15 @@ AC_PROG_CXX
 
 # Checks for library functions.
 
+if test "$prefix" = NONE; then
+    LIBBOOST_DIR="$ac_default_prefix/lib";
+else
+    LIBBOOST_DIR="$prefix/lib";
+fi
+case "$build_os" in 
+    darwin*)
+    LIBBOOST_DIR="/usr/local/Cellar/boost/1.53.0/lib/"
+    ;;
+esac
+AC_SUBST(LIBBOOST_DIR)
 AC_OUTPUT
